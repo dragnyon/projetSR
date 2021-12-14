@@ -23,7 +23,7 @@ int manche=1;
 //int cartejouer[manche*nbjoueur];
 
 void afficheconn();
-void* envinfo(void* info);
+
 //void topdepart();
 //void initcarte();
 void main(int argc, char** argv)
@@ -37,24 +37,37 @@ void main(int argc, char** argv)
 	listen(fd,5);
 
 
-	while(1)
+
+
+
+	
+	while(conn = accept(fd, (struct sockaddr *)NULL, NULL))
 	{
-
-
-		conn = accept(fd, (struct sockaddr *)NULL, NULL);
 		joueur[nbjoueur]=conn;
 		nbjoueur++;
 		afficheconn();
+		printf("%d joueurs - %d %d %d %d %d",nbjoueur,joueur[0],joueur[1],joueur[2],joueur[3],joueur[4]);
+		if(fork()==0)
+		{
+				while(recv(conn, message, 100, 0))
+				{
+						printf("\nCartes jouer par le joueur %d: %s\n",conn, message);
+    					for(int i=0;i<5;i++)
+    					{
+    						send(joueur[i], message, strlen(message), 0);
+    					}
+    					memset(message,0,sizeof(message));
+				}
+		}
 
-		pthread_t threadenv;
-		pthread_create(&threadenv,NULL,envinfo,(void*)&message);
+	
+	
 
-
-    //fprintf(stderr,"Joueur %d deconnecter ",conn);
+   
 
    }
 
-
+ fprintf(stderr,"Joueur %d deconnecter ",conn);
 }
 
 
@@ -68,26 +81,7 @@ void afficheconn()
 	printf("Il y a %d joueurs\n",nbjoueur);
 }
 
-void* envinfo(void* info)
-{
-	while(1)
-	{
-		printf("%d joueurs - %d %d %d %d %d",nbjoueur,joueur[0],joueur[1],joueur[2],joueur[3],joueur[4]);
 
-				if(recv(conn, message, 100, 0))
-				{
-						printf("\nCartes jouer par le joueur %d: %s\n",conn, message);
-    					for(int i=0;i<5;i++)
-    					{
-    						send(joueur[i], message, strlen(message), 0);
-    					}
-    					memset(message,0,sizeof(message));
-				}
-
-
-	}
-
-}
 
 /*
 void topdepart()
