@@ -7,16 +7,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
+#define NB_J 2
 
 
-pthread_mutex_t mutex= PTHREAD_MUTEX_INITIALIZER;
 struct sockaddr_in serv;
 int fd;
 int conn;
 char message[100] = "";
 char test[100]="vous etes connecte\0";
 int nbjoueur=0;
-int joueur[5];
+int joueur[NB_J];
 int manche=1;
 
 //int cartesjoueurs[nbjoueur][manche+1];
@@ -24,7 +24,7 @@ int manche=1;
 
 void afficheconn();
 
-//void topdepart();
+
 //void initcarte();
 void main(int argc, char** argv)
 {
@@ -41,23 +41,27 @@ void main(int argc, char** argv)
 
 
 	
-	while(conn = accept(fd, (struct sockaddr *)NULL, NULL))
+	while(nbjoueur<=2)
 	{
+		conn = accept(fd, (struct sockaddr *)NULL, NULL);
 		joueur[nbjoueur]=conn;
 		nbjoueur++;
 		afficheconn();
-		printf("%d joueurs - %d %d %d %d %d",nbjoueur,joueur[0],joueur[1],joueur[2],joueur[3],joueur[4]);
-		if(fork()==0)
+		printf("%d joueurs - %d %d %d",nbjoueur,joueur[0],joueur[1]);
+		if(nbjoueur==2)
 		{
+			if(fork()==0)
+			{
 				while(recv(conn, message, 100, 0))
 				{
 						printf("\nCartes jouer par le joueur %d: %s\n",conn, message);
-    					for(int i=0;i<5;i++)
+    					for(int i=0;i<2;i++)
     					{
     						send(joueur[i], message, strlen(message), 0);
     					}
     					memset(message,0,sizeof(message));
 				}
+			}
 		}
 
 	
@@ -76,35 +80,10 @@ void main(int argc, char** argv)
 
 void afficheconn()
 {
-	//nbjoueur++;
+	
 	printf("Le joueur %d viens de se connecté !\n",conn);
 	printf("Il y a %d joueurs\n",nbjoueur);
 }
 
 
 
-/*
-void topdepart()
-{
-	int temps=0;
-	time_t begin=time(NULL);
-	printf("debut compteur");
-	while(temps<10) {
-
-
-	sleep(1);
-
-	temps=(int)difftime(end,begin);
-	if(temps<10) {
-		printf("%d",temps);
-
-	}
-	else {
-
-		printf("temps ecoule");
-		exit(1);
-	}
-}
-
-}
-*/
