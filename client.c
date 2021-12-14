@@ -74,7 +74,7 @@ void* env(void* cartej)
 	{
 		printf("Quelle carte jouez-vous ?\n");
         envoi[0] = '0'+THI;
-        envoi[1] = '0';
+        envoi[1] = '-';
         fgets(envoi+2, 98, stdin);
 
     	send(fd, envoi, strlen(envoi), 0);
