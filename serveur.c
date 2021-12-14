@@ -19,12 +19,6 @@ int nbjoueur=0;
 int joueur[NB_J];
 int manche=1;
 
-//int cartesjoueurs[nbjoueur][manche+1];
-//int cartejouer[manche*nbjoueur];
-
-void afficheconn();
-
-
 //void initcarte();
 void main(int argc, char** argv)
 {
@@ -36,54 +30,27 @@ void main(int argc, char** argv)
 	bind(fd, (struct sockaddr *)&serv, sizeof(serv));
 	listen(fd,5);
 
-
-
-
-
-	
-	while(nbjoueur<=2)
+	while(nbjoueur<NB_J)
 	{
 		conn = accept(fd, (struct sockaddr *)NULL, NULL);
-		joueur[nbjoueur]=conn;
-		nbjoueur++;
-		afficheconn();
+		joueur[nbjoueur++]=conn;
+		printf("Le joueur %d viens de se connecté !\n",conn);
+		printf("Il y a %d joueurs\n",nbjoueur);
 		printf("%d joueurs - %d %d %d",nbjoueur,joueur[0],joueur[1]);
-		if(nbjoueur==2)
-		{
-			if(fork()==0)
-			{
-				while(recv(conn, message, 100, 0))
-				{
-						printf("\nCartes jouer par le joueur %d: %s\n",conn, message);
-    					for(int i=0;i<2;i++)
-    					{
-    						send(joueur[i], message, strlen(message), 0);
-    					}
-    					memset(message,0,sizeof(message));
-				}
+   	}
+
+	printf("merde\n");
+
+	for (int t=0; t<NB_J; t++)
+		if(fork()==0)
+			while(recv(joueur[t], message, 100, 0)) {
+				printf("\nCartes jouer par le joueur %d: %s\n",joueur[t], message);
+				for(int i=0;i<2;i++)
+					send(joueur[i], message, strlen(message), 0);
+				memset(message,0,sizeof(message));
 			}
-		}
 
-	
-	
+	while(1) ;
 
-   
-
-   }
-
- fprintf(stderr,"Joueur %d deconnecter ",conn);
+   	fprintf(stderr,"Joueur %d deconnecter ",conn);
 }
-
-
-
-
-
-void afficheconn()
-{
-	
-	printf("Le joueur %d viens de se connecté !\n",conn);
-	printf("Il y a %d joueurs\n",nbjoueur);
-}
-
-
-
