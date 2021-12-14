@@ -73,7 +73,7 @@ void* envinfo(void* info)
 	while(1)
 	{
 		printf("%d joueurs - %d %d %d %d %d",nbjoueur,joueur[0],joueur[1],joueur[2],joueur[3],joueur[4]);
-				
+
 				if(recv(conn, message, 100, 0))
 				{
 						printf("\nCartes jouer par le joueur %d: %s\n",conn, message);
