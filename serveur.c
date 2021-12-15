@@ -53,18 +53,23 @@ void main(int argc, char** argv)
    }
 	for (int t=0; t<NB_J; t++)
 		if(fork()==0)
+		{
+			char infoj[SIZE_BUFF]="";
+			send(joueur[t], cartedejoueur(infoj,joueur[t]-4,manchecourante), SIZE_BUFF, 0);
 			while(recv(joueur[t], message, SIZE_BUFF, 0)) 
 			{
 				printf("\nLe joueur %d a jouer \n",joueur[t]);
 				joue(joueur[t], nbcoups);
 				nbcoups++;
-				char infoj[SIZE_BUFF]="";
+				
 				for(int i=0;i<2;i++)
+				{
 					send(joueur[i], cartedejoueur(infoj,joueur[i]-4,manchecourante), SIZE_BUFF, 0);
+				}
 				memset(message,0,SIZE_BUFF);
 				
 			}
-
+		}
 	while(1) ;
 
    	fprintf(stderr,"Joueur %d deconnecter ",conn);
