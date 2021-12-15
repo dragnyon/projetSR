@@ -57,7 +57,8 @@ void* recevoir(void* infojeu)
 		{
 			printf("%s",recu);
 			bzero(recu,100);
-			printf("Quelle carte jouez-vous ?\n");
+			printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
+			
 		}
 		else
 		{
@@ -72,7 +73,7 @@ void* env(void* cartej)
 {
 	while(1)
 	{
-		printf("Quelle carte jouez-vous ?\n");
+		printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
         envoi[0] = '0'+THI;
         envoi[1] = '-';
         fgets(envoi+2, 98, stdin);
