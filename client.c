@@ -8,8 +8,8 @@
 
 struct sockaddr_in serv;
 int fd;
-int conn;
-int manche=3;
+
+
 char envoi[100] = "";
 char recu[100]="";
 int THI = 0;
@@ -73,7 +73,7 @@ void* env(void* cartej)
 {
 	while(1)
 	{
-		printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
+		//printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
         envoi[0] = '0'+THI;
         envoi[1] = '-';
         fgets(envoi+2, 98, stdin);
