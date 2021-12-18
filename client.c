@@ -12,7 +12,7 @@ int fd;
 
 char envoi[100] = "";
 char recu[100]="";
-int THI = 0;
+
 
 
 void* recevoir(void* infojeu);
@@ -28,7 +28,6 @@ void error(char *msg)
 
 void main(int argc, char** argv){
 
-THI = strtol(argv[2], NULL, 10);
 fd = socket(AF_INET, SOCK_STREAM, 0);
 serv.sin_family = AF_INET;
 serv.sin_port = htons(strtol(argv[1], NULL, 10));
@@ -51,14 +50,19 @@ if(connect(fd, (struct sockaddr *)&serv, sizeof(serv))<0)
 
 void* recevoir(void* infojeu)
 {
+	int i=0;
+	int j=1;
 	while(1)
 	{
-		if(recv(fd,recu,100,0)>0)
+		if(recv(fd,recu,100,0))
 		{
 			printf("%s",recu);
 			bzero(recu,100);
-			printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
-			
+			if(i)
+			{
+				printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
+			}
+			i=j;
 		}
 		else
 		{
@@ -74,11 +78,8 @@ void* env(void* cartej)
 	while(1)
 	{
 		//printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
-        envoi[0] = '0'+THI;
-        envoi[1] = '-';
-        fgets(envoi+2, 98, stdin);
-
-    	send(fd, envoi, strlen(envoi), 0);
+      fgets(envoi, 100, stdin);
+		send(fd, envoi, strlen(envoi), 0);
     	bzero(envoi,100);
 	};
 }
