@@ -12,8 +12,10 @@ int fd;
 
 char envoi[100] = "";
 char recu[100]="";
-
-
+char message[100] = "Attente d'autre joueurs\n";
+char message1[100] = "La partie commence !\n";
+char gagner[50]="g";
+char perdu[50]="p";
 
 void* recevoir(void* infojeu);
 void* env(void* cartej);
@@ -50,19 +52,50 @@ if(connect(fd, (struct sockaddr *)&serv, sizeof(serv))<0)
 
 void* recevoir(void* infojeu)
 {
-	int i=0;
-	int j=1;
+	
 	while(1)
 	{
 		if(recv(fd,recu,100,0))
 		{
-			printf("%s",recu);
-			bzero(recu,100);
-			if(i)
+			if(strcmp(recu,perdu)==0)
 			{
-				printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
+				printf("Manche perdu");
 			}
-			i=j;
+			else
+			{
+				if(strcmp(recu,gagner)==0)
+				{
+					printf("Manche gagne");
+				}
+				else
+				{
+					if(strcmp(recu,message)==0)
+					{
+						printf("Attente d'autre joueurs\n");
+					}
+					else
+					{
+						if(strcmp(recu,message1)==0)
+						{
+						printf("La partie commence !\n");
+						}
+						else
+						{
+							printf("Vos cartes : ");
+							for(int i=0;i<10;i++)
+							{
+								if(recu[i]!=0)				
+								{
+									printf("%d-",recu[i]);
+								}
+							}
+							printf("\nAppuyez sur Entrée pour jouer: \n(vous jouerez votre plus petite carte)\n");
+						}	
+					}
+				}
+			}
+			bzero(recu,100);
+		
 		}
 		else
 		{

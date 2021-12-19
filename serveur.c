@@ -11,26 +11,30 @@
 #define NB_MANCHE 10
 #define SIZE_BUFF 50
 
-int comIntern[NB_J][2];
+
 struct sockaddr_in serv;
 int fd;
 int conn;
-char message[SIZE_BUFF] = "\nAttente d'autre joueurs\n";
-char message1[SIZE_BUFF] = "\nLa partie commence !\n";
+char message[SIZE_BUFF] = "Attente d'autre joueurs\n";
+char message1[SIZE_BUFF] = "La partie commence !\n";
 int nbjoueur=0;
 int joueur[NB_J];
 int manchecourante=1;
 int nbcoups=0;
-char cartesjoueur[NB_J][NB_MANCHE];
-char cartejoue [NB_J*NB_MANCHE];
-char gagner[SIZE_BUFF]="Manche gagné";
-char perdu[SIZE_BUFF]="Manche perdu";
+char recoi [SIZE_BUFF]="";
+char cartesjoueur1[NB_MANCHE];
+char cartesjoueur2[NB_MANCHE];
+char gagner[SIZE_BUFF]="g";
+char perdu[SIZE_BUFF]="p";
+char cartejoue[NB_J*NB_MANCHE];
+
+
 
 void* ecoute1(void* jsp);
 void* ecoute2(void* jsp);
 void initcarte();
-void affichecartes();
-char* cartedejoueur(char* infoj,int joueur,int manchec);
+void affichecartes1();
+void affichecartes2();
 void joue(int j, int coup);//joue la premiere carte du tableau du joueur qui joue
 int verif();//verifie si la manche est perdu ou gagné
 void trie();//trie les carte de chaque joueur dans l'ordre croissant
@@ -45,13 +49,12 @@ void main(int argc, char* argv[])
 	fd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(fd, (struct sockaddr *)&serv, sizeof(serv));
 	listen(fd,5);
-	initcarte();
+	
    
 	while(nbjoueur<NB_J)
 	{
 		conn = accept(fd, (struct sockaddr *)NULL, NULL);
 		joueur[nbjoueur]=conn;
-		cartesjoueur[nbjoueur][0]=conn;
 		nbjoueur++;
 		if(nbjoueur<NB_J)
 		{
@@ -59,61 +62,61 @@ void main(int argc, char* argv[])
 		}
 		printf("Le joueur %d viens de se connecter !\n",conn);
 		printf("Il y a %d joueurs\n",nbjoueur);
-		printf("%d joueurs - %d %d %d",nbjoueur,joueur[0],joueur[1]);
+		printf("%d joueurs - %d %d \n",nbjoueur,joueur[0],joueur[1]);
    }
-   
-   affichecartes();
+   initcarte();
+   affichecartes1();
+   affichecartes2();
+ 	printf("Manche : %d",manchecourante);
+  
    pthread_t thread1;
 	pthread_t thread2;
 	
-   pthread_create(&thread1, NULL, ecoute1, (void*)&joueur[0]);
- 	pthread_create(&thread2, NULL, ecoute2, (void*)&joueur[1]);
+   pthread_create(&thread1, NULL, ecoute1, NULL);
+ 	pthread_create(&thread2, NULL, ecoute2, NULL);
+ 
 	while(1)
 	{
-		if(nbcoups==(NB_J*manchecourante))
+		if(nbcoups==(2*manchecourante))
 		{
 			if(verif()==0)
 			{
 				manchecourante++;
 				for(int p=0;p<2;p++)
-				{	
-					//send(joueur[p], cartejoue, SIZE_BUFF, 0);
+				{		
 					send(joueur[p], gagner, strlen(gagner), 0);
 				}
 			}
 			else 
 			{
 				for(int p=0;p<2;p++)
-				{	
-					//send(joueur[p], cartejoue, SIZE_BUFF, 0);
+				{		
 					send(joueur[p], perdu, strlen(perdu), 0);
 				}
 			}
 			nbcoups=0;
 			initcarte();
-			affichecartes();
-			bzero(cartejoue,(NB_J*NB_MANCHE));
+			affichecartes1();
+   	   affichecartes2();
+			memset(cartejoue,0,(NB_J*NB_MANCHE));	
 		}
-	};
-   
-	
-	
-		
-	
+	}
 }
 
 void initcarte()
 {
 	srand(time(NULL));
-	for(int i=0;i<NB_J;i++)
-	{
-		for(int j=1;j<=NB_MANCHE;j++)
-		{	
-			cartesjoueur[i][j]=rand()%100;	
-		}	
-	}
+	for(int j=0;j<NB_MANCHE;j++)
+	{	
+		cartesjoueur1[j]=rand()%100;	
+		cartesjoueur2[j]=rand()%100;			
+	}	
+	cartesjoueur1[NB_MANCHE]='\0';	
+	cartesjoueur2[NB_MANCHE]='\0';
 	//trie();
 }
+
+
 
 void trie()
 {
@@ -122,85 +125,104 @@ void trie()
 	{
 		for(int i=0;i<NB_J;i++)
 		{
-			for(int j=1;j<NB_MANCHE;j++)
-			{
-				if(cartesjoueur[i][j]>cartesjoueur[i][j+1])
-				{
-					temp=cartesjoueur[i][j];
-					cartesjoueur[i][j]=cartesjoueur[i][j+1];
-					cartesjoueur[i][j+1]=temp;
-				}
-			}		
-		}
-	}
-
-
-}
-
-
-
-
-
-void affichecartes()
-{
-	for(int i=0;i<NB_J;i++)
-	{
-		printf("\nCartes du joueur %d:",cartesjoueur[i][0]);
-		for(int j=1;j<NB_MANCHE;j++)
-		{
 			
-			printf("%d  ",cartesjoueur[i][j]);	
+				if(cartesjoueur1[i]>cartesjoueur1[i+1])
+				{
+					temp=cartesjoueur1[i];
+					cartesjoueur1[i]=cartesjoueur1[i+1];
+					cartesjoueur1[i+1]=temp;
+				}
+					
+				if(cartesjoueur2[i]>cartesjoueur2[i+1])
+				{
+					temp=cartesjoueur2[i];
+					cartesjoueur2[i]=cartesjoueur2[i+1];
+					cartesjoueur2[i+1]=temp;
+				}	
 		}
-		printf("\n");	
 	}
-} 
 
 
-//renvoi dans un tableau les cartes du joueur d'id passé en paramètre 
-char* cartedejoueur(char* infoj,int joueur, int manchec)
-{
-	
-	for(int i=1;i<=manchec+1;i++)
-		snprintf(infoj,SIZE_BUFF,"%s-%d",infoj,cartesjoueur[joueur][i]);
-	return infoj;
 }
+
+
+
+
+
+void affichecartes1()
+{
+		printf("\nCartes du joueur %d:",1);
+		for(int j=0;j<NB_MANCHE;j++)
+		{		
+			printf("%d-",cartesjoueur1[j]);	
+		}
+}
+
+void affichecartes2()
+{
+		printf("\nCartes du joueur %d:",2);
+		for(int i=0;i<NB_MANCHE;i++)
+		{	
+			printf("%d-",cartesjoueur2[i]);	
+		}
+}
+
 
 void joue(int j, int coup)
 {
 	int i =0;
-	int t=1;
-	do 
+	int t=0;
+	if(j==0)
 	{
-		
-		if(cartesjoueur[j][t]!=0)
+		do 
 		{
-			printf("ca joue\n");
-			cartejoue[coup]=cartesjoueur[j][t];
-			cartesjoueur[j][t]=0;
-			i=1;
-		}
-		else 
-		{
+			if(cartesjoueur1[t]!=0)
+			{
+				printf("ca joue\n");
+				cartejoue[coup]=cartesjoueur1[t];
+				cartesjoueur1[t]=0;
+				i=1;
+			}
+			else 
+			{
 			t++;
+			}
 		}
+		while(i==0);
 	}
-	while(i==0);
-	printf("cartes jouées");	
-	for(int q=0;q<10;q++)
+	else
 	{
-		if(cartejoue!=0)
+		do 
 		{
-			printf("%d-",cartejoue[q]);
+			if(cartesjoueur2[t]!=0)
+			{
+				printf("ca joue\n");
+				cartejoue[coup]=cartesjoueur2[t];
+				cartesjoueur2[t]=0;
+				i=1;
+			}
+			else 
+			{
+			t++;
+			}
 		}
-	}
-	
+		while(i==0);
+	}	
+		printf("cartes jouées");	
+		for(int q=0;q<10;q++)
+		{
+			if(cartejoue[q]!=0)
+			{
+				printf("%d-",cartejoue[q]);
+			}
+		}
 }
 
 
 int verif()
 {
 	int j=0;
-	for(int i=0;i<(NB_J*manchecourante);i++)
+	for(int i=0;i<(2*manchecourante)-1;i++)
 	{
 		if(cartejoue[i+1]<cartejoue[i])
 		{
@@ -208,52 +230,41 @@ int verif()
 		}
 	}
 	return j;
-
 }
 
 void* ecoute1(void* jsp)
 {
-
-		
-			send(joueur[0], message1, strlen(message1), 0);			
-			char infoj[SIZE_BUFF]="";
-			send(joueur[0], cartedejoueur(infoj,joueur[0],manchecourante), SIZE_BUFF, 0);
-			while(recv(joueur[0], message, SIZE_BUFF, 0)) 
-			{
-				printf("\nLe joueur %d a jouer \n",joueur[0]);
-				joue(0, nbcoups);
-				nbcoups++;
-				affichecartes();
-				for(int i=0;i<2;i++)
-				{	
-					send(joueur[i], cartedejoueur(infoj,i,manchecourante), SIZE_BUFF, 0);
-					//send(joueur[i], cartejoue, SIZE_BUFF, 0);
-				}
-		
-			}	
+	send(joueur[0], message1, strlen(message1), 0);			
+	send(joueur[0], cartesjoueur1, manchecourante, 0);
+	while(recv(joueur[0], recoi, SIZE_BUFF, 0)) 
+	{
+		printf("\nLe joueur %d a jouer \n",joueur[0]);
+		joue(0, nbcoups);
+		nbcoups++;
+		affichecartes1();
+		affichecartes2();
+		send(joueur[0], cartesjoueur1, manchecourante, 0);
+		send(joueur[1], cartesjoueur2, manchecourante, 0);
+		bzero(recoi,SIZE_BUFF);
+	}	
 }
 
 
 void* ecoute2(void* jsp)
 {
-
-		
-			send(joueur[1], message1, strlen(message1), 0);			
-			char infoj[SIZE_BUFF]="";
-			send(joueur[1], cartedejoueur(infoj,joueur[1],manchecourante), SIZE_BUFF, 0);
-			while(recv(joueur[1],message, SIZE_BUFF, 0)) 
-			{
-				printf("\nLe joueur %d a jouer \n",joueur[1]);
-				joue(1, nbcoups);
-				affichecartes();
-				nbcoups++;
-				for(int i=0;i<2;i++)
-				{	
-					send(joueur[i], cartedejoueur(infoj,i,manchecourante), SIZE_BUFF, 0);
-					//send(joueur[i], cartejoue, SIZE_BUFF, 0);
-				}
-						
-			}	
+	send(joueur[1], message1, strlen(message1), 0);			
+	send(joueur[1], cartesjoueur2, manchecourante, 0);
+	while(recv(joueur[1],recoi, SIZE_BUFF, 0)) 
+	{
+		printf("\nLe joueur %d a jouer \n",joueur[1]);
+		joue(1, nbcoups);
+		affichecartes1();
+		affichecartes2();
+		nbcoups++;
+		send(joueur[0], cartesjoueur1, manchecourante, 0);
+		send(joueur[1], cartesjoueur2, manchecourante, 0);
+		bzero(recoi,SIZE_BUFF);
+	}	
 }
 
 
